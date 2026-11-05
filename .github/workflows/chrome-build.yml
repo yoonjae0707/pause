@@ -1,7 +1,7 @@
 name: Chrome validation build
 on:
   push:
-    branches: [feature/pause-longform-mvp]
+    branches: [feature/pause-longform-mvp, feature/pause-notes-ui]
   pull_request:
   workflow_dispatch:
 permissions:

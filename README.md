@@ -136,3 +136,37 @@ HOTFIX-002 이후 사용자 데스크톱 Chrome에서 종료 성찰 표시 성�
 5. 1~2분 영상을 1배속으로 충분히 재생해 종료 성찰이 한 번 뜨는지 확인합니다. 5초 이전 저장, 5초 후 기록 없이 건너뛰기, 자동재생 중 다음 영상 정지/복구를 다시 확인합니다. 사용자에게 확인된 HOTFIX-002 동작의 회귀 확인 항목입니다.
 
 자동 DOM 테스트는 실제 키 입력 삽입이나 운영 YouTube의 리스너 등록 순서를 검증하지 않습니다. 설치 커밋·Chrome 버전과 각 항목의 통과/실패/미실행을 구분해서 기록하세요.
+
+## UI-001: 액션 바 PAUSE Note와 패널
+
+기준은 BUGFIX-001 `0bd7b421128515dffbdbe34363ad20fc751b3466`이며 UI 작업 브랜치는 `feature/pause-notes-ui`입니다. 사용자 Chrome 보고상 Space·숫자·한글·최초 입력 시각·종료 성찰은 정상입니다. 이 UI 빌드의 실제 Chrome 배치 및 전체화면·광고·자동재생·다중 탭은 별도 검증 대기입니다.
+
+### 배치 구조와 근거
+
+`src/action-entry.ts`는 watch의 기존 액션 그룹에 PAUSE 전용 Shadow DOM 캡슐 버튼 하나를 추가합니다. `Ⅱ PAUSE Note`와 확장 프로그램 tooltip으로 브랜드를 구분하고 기존 Notes 패널의 열림 상태만 토글합니다. 데이터/패널은 새로 만들지 않습니다. 버튼 자체는 별도 스타일 경계를 사용하며, 입력창은 기존 Shadow DOM에 그대로 있어 BUGFIX-001 격리를 유지합니다.
+
+삽입 후보는 다음 순서입니다. 이는 watch metadata의 actions/menu 구조를 가정한 **호환성 후보**이며, 이 환경에서 실제 YouTube DOM을 확인한 셀렉터라고 주장하지 않습니다. 환경에 브라우저 도구가 없고 YouTube 도메인도 허용 목록에 없어 라이브 DOM 확인은 수행하지 못했습니다.
+
+1. `ytd-watch-metadata #actions #top-level-buttons-computed`: 좋아요/공유 등의 최상위 버튼 그룹으로 범위를 제한합니다.
+2. `ytd-watch-metadata #actions-inner #top-level-buttons-computed`: actions-inner 래퍼 변형을 허용합니다.
+3. `ytd-watch-flexy #above-the-fold #actions ytd-menu-renderer #top-level-buttons-computed`: watch의 상단 metadata/menu 변형에 한정합니다.
+
+Shorts/홈/기타 페이지는 주입 대상이 아닙니다. URL, 화면 너비, 실제 요소 크기·숨김·오버플로를 확인하고 성공한 동안 FAB를 숨깁니다. 840px 미만, 타깃 미발견/숨김, 가로 영역 초과 시 action 버튼은 제거 또는 숨김/비활성하고 기존 FAB를 제공합니다. 제한된 자리의 숨긴 버튼은 absolute로 배제해 다른 버튼의 공간을 점유하지 않습니다. 현재 판정은 보수적이며 공간이 있어도 FAB가 나올 수 있습니다.
+
+구조 변경 감지는 MutationObserver 하나에서 관련 watch/metadata 노드 변경을 필터링하고 requestAnimationFrame으로 프레임당 한 번으로 합칩니다. 크기는 ResizeObserver와 window resize로 재평가합니다. 반복 폴링은 하지 않습니다. SPA 완료/popstate, 액션 바 재생성에서 같은 호스트를 이동하고 dispose 시 observer·예약 frame·리스너·호스트를 제거합니다. 기존 재생 추적기의 observer/정책은 변경하지 않습니다.
+
+패널은 중립 배경·간격·명시적인 focus ring·고대비 모드·좁은 창 폭을 지원하며 YouTube `html[dark]` 속성을 따라갑니다. 색·레이아웃 테스트는 DOM 모의 검사이며 실제 픽셀/대비 측정이나 YouTube 테마 검증은 아닙니다.
+
+### 설치와 Chrome 체크리스트 (이번 빌드 미검증)
+
+이 브랜치 push도 기존 **Chrome validation build** workflow를 실행하도록 추가했습니다. Actions에서 브랜치 `feature/pause-notes-ui`와 설치할 커밋의 **성공 실행 → Artifacts → pause-chrome-task002**를 선택하세요. 아티팩트 이름은 기존 이름을 유지합니다. 원격 Actions 실행 성공은 이 작업에서 확인하지 못했습니다. PC 직접 빌드는 `git clone --branch feature/pause-notes-ui https://github.com/yoonjae0707/pause.git` 후 `npm ci && npm test && npm run build`입니다. `npm run package:chrome`의 로컬 ZIP 경로도 기존과 같습니다. `/workspace/...`는 PC 다운로드 링크가 아닙니다.
+
+- 압축 해제한 폴더의 PAUSE-BUILD.json 커밋을 확인하고 확장 프로그램과 YouTube 탭을 새로고침합니다.
+- 일반 watch에서 좋아요·공유 그룹에 PAUSE Note가 하나만 있고, 다른 버튼과 겹치지 않으며 FAB는 숨겨지는지 확인합니다. 미표시라면 FAB 접근이 가능한지 확인하고 실제 actions DOM 구조를 기록하세요(메모·계정·인증 내용 제외).
+- PAUSE Note 클릭/Enter/Space로 동일 패널이 열리고 닫히는지, aria-expanded와 Tab 포커스가 정상인지 확인합니다. 입력 중 Space·숫자·IME·Ctrl/Cmd+A/C/V·Esc, 입력 밖 YouTube 단축키를 다시 확인합니다.
+- YouTube 라이트/다크를 전환하고, 좁은 창/확대율 변경에서 FAB로 전환되는지, 넓히면 action 버튼이 복원되는지 확인합니다. 잘림·겹침·강제 가로 스크롤은 실패입니다.
+- 초안 입력 중 패널 닫기/열기, 다른 영상 이동·뒤로 가기, 액션 바 재생성 시 버튼/패널 중복과 입력 유실이 없는지 확인합니다. 처음 입력 204초→다른 위치에서 저장→204초 이동도 재확인합니다.
+- 전체화면 전후 표시/복귀와 메모 저장을 확인합니다. 전체화면에서 플레이어 밖 패널이 가려지는 기존 제한은 해결 완료로 간주하지 않습니다.
+- 충분히 시청한 종료 성찰, 5초 후 건너뛰기·즉시 저장을 다시 확인합니다. 광고·자동재생·다중 탭은 독립 항목으로 기록하고 미실행을 통과로 처리하지 마세요.
+
+셀렉터가 YouTube 실험 DOM과 다르면 FAB가 유지됩니다. 액션 바 수동 검증 결과를 확보한 뒤 필요한 셀렉터만 좁게 보완하는 것이 다음 작업입니다.
