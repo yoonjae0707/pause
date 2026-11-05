@@ -10,3 +10,4 @@ describe('actual playback',()=>{
  it('excludes shorts, playlists and homepage',()=>{expect(videoId('https://www.youtube.com/watch?v=abc&list=x')).toBe('abc');expect(videoId('https://www.youtube.com/shorts/abc')).toBeNull();});
 });
 it('does not double credit duplicate samples or a same-position rebind',()=>{const t=new WatchTracker();t.sample(0,0,true);for(let i=1;i<=40;i++){t.sample(i,i*1000,true);t.sample(i,i*1000,true);t.seek(i,i*1000,false);t.sample(i,i*1000,true);}expect(t.watched).toBe(40);expect(t.end(40)).toBe(true);expect(t.end(40)).toBe(false);});
+it('does not count buffering wall time as playback, but credits resumed playback',()=>{const t=new WatchTracker();t.sample(0,0,true);t.sample(0,60000,true);expect(t.watched).toBe(0);t.sample(1,61000,true);expect(t.watched).toBe(1);expect(t.end(60)).toBe(false);});

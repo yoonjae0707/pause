@@ -1,0 +1,3 @@
+import {it,expect,vi} from 'vitest';
+import {configureDiagnostics,diagnostic} from '../src/diagnostics';
+it('is opt in and emits only the explicit technical snapshot',()=>{const log=vi.spyOn(console,'info').mockImplementation(()=>{});configureDiagnostics(false);diagnostic('ended',{videoId:'a'});expect(log).not.toHaveBeenCalled();configureDiagnostics(true);diagnostic('ended',{videoId:'a',duration:60,watched:59,ratio:59/60,reason:'eligible'});expect(log).toHaveBeenCalledTimes(1);expect(JSON.parse(log.mock.calls[0][1])).toEqual({event:'ended',videoId:'a',duration:60,watched:59,ratio:59/60,reason:'eligible'});configureDiagnostics(false);log.mockRestore();});

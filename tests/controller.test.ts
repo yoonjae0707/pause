@@ -37,3 +37,22 @@ it('resets the baseline on source loading rather than crediting the source repla
  event(v,'emptied',0);vi.advanceTimersByTime(10000);event(v,'loadstart',5);event(v,'timeupdate',10);expect(controller.current!.tracker.watched).toBe(1);
  event(v,'play',10);vi.advanceTimersByTime(1000);event(v,'timeupdate',11);expect(controller.current!.tracker.watched).toBe(2);
 });
+it('preserves eligible origin across autoplay URL change before ended, with one intervention',()=>{
+ const ended=vi.fn();controller=new Controller(()=>{},ended);const v=controller.current!.video;Object.defineProperty(v,'duration',{value:60});Object.defineProperty(v,'paused',{value:false});
+ event(v,'play',0);for(let i=1;i<=59;i++){vi.advanceTimersByTime(1000);event(v,'timeupdate',i);}vi.advanceTimersByTime(800);event(v,'timeupdate',59.8);
+ const origin=controller.current!;history.pushState({},'','/watch?v=playlist-next');document.dispatchEvent(new Event('yt-navigate-start'));
+ expect(ended).toHaveBeenCalledTimes(1);expect(ended.mock.calls[0][0].id).toBe('a');expect(origin.duration).toBe(60);
+ document.dispatchEvent(new Event('yt-navigate-finish'));v.dispatchEvent(new Event('ended'));expect(ended.mock.calls.filter(([c])=>c.id==='a')).toHaveLength(1);
+});
+it('does not infer completion from 70 percent alone on a manual SPA departure',()=>{
+ const ended=vi.fn();controller=new Controller(()=>{},ended);const v=controller.current!.video;Object.defineProperty(v,'duration',{value:60});Object.defineProperty(v,'paused',{value:false});event(v,'play',0);
+ for(let i=1;i<=45;i++){vi.advanceTimersByTime(1000);event(v,'timeupdate',i);}document.dispatchEvent(new Event('yt-navigate-start'));expect(ended).not.toHaveBeenCalled();
+});
+it('detects an already ended detached element at binding replacement, preserving its ID',()=>{
+ const ended=vi.fn();controller=new Controller(()=>{},ended);const v=controller.current!.video;Object.defineProperty(v,'duration',{value:60});Object.defineProperty(v,'paused',{value:false});event(v,'play',0);
+ for(let i=1;i<=60;i++){vi.advanceTimersByTime(1000);event(v,'timeupdate',i);}Object.defineProperty(v,'ended',{value:true});v.replaceWith(document.createElement('video'));controller.sync();expect(ended).toHaveBeenCalledTimes(1);expect(ended.mock.calls[0][0].id).toBe('a');
+});
+it('does not consume the one intervention when the UI rejects it before settings are ready',()=>{
+ const ended=vi.fn().mockReturnValueOnce(false).mockReturnValue(true);controller=new Controller(()=>{},ended);const v=controller.current!.video;Object.defineProperty(v,'duration',{value:40});Object.defineProperty(v,'paused',{value:false});event(v,'play',0);
+ for(let i=1;i<=40;i++){vi.advanceTimersByTime(1000);event(v,'timeupdate',i);}event(v,'ended',40);expect(controller.current!.tracker.handled).toBe(false);Object.defineProperty(v,'ended',{value:true});controller.sync();expect(controller.current!.tracker.handled).toBe(true);controller.sync();expect(ended).toHaveBeenCalledTimes(2);
+});

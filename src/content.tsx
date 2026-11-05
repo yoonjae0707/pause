@@ -1,3 +1,4 @@
+import {configureDiagnostics,diagnostic} from './diagnostics';
 import React,{useEffect,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Controller,type PlaybackContext} from './controller';
@@ -15,18 +16,19 @@ export function App(){
  const [text,setText]=useState('');const [drafts,setDrafts]=useState<Record<string,string>>({});const [error,setError]=useState('');const [busy,setBusy]=useState(false);const [tick,setTick]=useState(Date.now());
  const pending=React.useRef<string|null>(null);const active=React.useRef(false);const settings=React.useRef<Database['settings']>({enabled:false,reflectionEnabled:false});const draftQueue=React.useRef(Promise.resolve());
  const controllerRef=React.useRef<Controller|null>(null);const hold=React.useRef<PlaybackHold|null>(null);
- useEffect(()=>{repo.read().then(data=>{setDb(data);setDrafts(data.drafts);settings.current=data.settings;}).catch(()=>setError('저장소를 읽지 못했습니다. 확장 프로그램을 다시 열어주세요.'));
-  const onChange=()=>{repo.read().then(data=>{setDb(data);settings.current=data.settings;}).catch(()=>{});};chrome.storage.onChanged.addListener(onChange);
+ useEffect(()=>{repo.read().then(data=>{setDb(data);setDrafts(data.drafts);settings.current=data.settings;configureDiagnostics(!!data.settings.diagnostics);}).catch(()=>setError('저장소를 읽지 못했습니다. 확장 프로그램을 다시 열어주세요.'));
+  const onChange=()=>{repo.read().then(data=>{setDb(data);settings.current=data.settings;configureDiagnostics(!!data.settings.diagnostics);}).catch(()=>{});};chrome.storage.onChanged.addListener(onChange);
   const controller=new Controller(c=>{setCtx(c);hold.current?.hold(c);},c=>{
-   if(!settings.current.enabled||!settings.current.reflectionEnabled||active.current)return;
+   if(!settings.current.enabled||!settings.current.reflectionEnabled||active.current){diagnostic('intervention-rejected',{videoId:c.id,reason:active.current?'active-overlay':'settings-disabled'});return false;}
+   diagnostic('intervention-start',{videoId:c.id});
    active.current=true;controller.setSuspended(true);hold.current=new PlaybackHold(c.id);c.video.pause();pending.current=null;
-   const record={id:c.id,title:document.querySelector('h1.ytd-watch-metadata')?.textContent?.trim()||document.title.replace(/ - YouTube$/,''),url:`https://www.youtube.com/watch?v=${encodeURIComponent(c.id)}`,duration:c.video.duration,updatedAt:Date.now()};
-   setText('');setReflection({ctx:c,record,started:Date.now()});
+   const record={id:c.id,title:c.title||document.title.replace(/ - YouTube$/,''),url:`https://www.youtube.com/watch?v=${encodeURIComponent(c.id)}`,duration:c.duration??c.video.duration,updatedAt:Date.now()};
+   setText('');setReflection({ctx:c,record,started:Date.now()});return true;
   });
   controllerRef.current=controller;
   return()=>{controller.dispose();controllerRef.current=null;chrome.storage.onChanged.removeListener(onChange);};
  },[]);
- useEffect(()=>{if(!reflection)return;
+ useEffect(()=>{if(!reflection)return;diagnostic('overlay-mounted',{videoId:reflection.ctx.id});
   const pauseCurrent=()=>{controllerRef.current?.sync();hold.current?.hold(controllerRef.current?.current??null);};
   const interval=setInterval(()=>{setTick(Date.now());pauseCurrent();},100);
   document.addEventListener('play',pauseCurrent,true);
@@ -35,7 +37,7 @@ export function App(){
   const previous=document.activeElement as HTMLElement|null;
   const key=(event:KeyboardEvent)=>{if(event.key!=='Tab')return;const nodes=Array.from(shadow.querySelectorAll<HTMLElement>('.dialog textarea:not(:disabled),.dialog button:not(:disabled)'));if(!nodes.length)return;const index=nodes.indexOf(shadow.activeElement as HTMLElement);event.preventDefault();nodes[(index+(event.shiftKey?-1:1)+nodes.length)%nodes.length].focus();};
   shadow.addEventListener('keydown',key as EventListener);
-  document.addEventListener('click',click,true);return()=>{clearInterval(interval);document.removeEventListener('play',pauseCurrent,true);document.removeEventListener('click',click,true);shadow.removeEventListener('keydown',key as EventListener);previous?.focus();};
+  document.addEventListener('click',click,true);return()=>{diagnostic('overlay-unmounted',{videoId:reflection.ctx.id});clearInterval(interval);document.removeEventListener('play',pauseCurrent,true);document.removeEventListener('click',click,true);shadow.removeEventListener('keydown',key as EventListener);previous?.focus();};
  },[reflection]);
  const finish=()=>{active.current=false;setReflection(null);const url=pending.current;pending.current=null;const interrupted=hold.current;hold.current=null;controllerRef.current?.setSuspended(false);void interrupted?.release(controllerRef.current?.current??null,!!url).catch(()=>setError('다음 영상의 재생 버튼을 눌러 계속 시청해주세요.'));if(url)navigateTo(url);};
  const saveReflection=async()=>{if(!reflection||!text.trim()||busy)return;setBusy(true);try{await repo.put('video',reflection.record.id,reflection.record);const id=crypto.randomUUID();await repo.put('reflection',id,{id,videoId:reflection.record.id,text:text.trim(),createdAt:Date.now()});setError('');finish();}catch{setError('저장하지 못했습니다. 내용을 유지했으니 다시 시도해주세요.');}finally{setBusy(false);}};
