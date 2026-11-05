@@ -19,5 +19,9 @@ export class Repository {
   return db;
  }
  async put(kind:'video'|'note'|'reflection'|'shorts'|'draft',id:string,value:unknown){await this.store.set({[`${PREFIX}${kind}:${id}`]:value});}
+ async saveNote(video:Database['videos'][string],note:Database['notes'][number]){
+  // One storage operation: a failed draft clear must not leave a saved note to duplicate on retry.
+  await this.store.set({[`${PREFIX}video:${video.id}`]:video,[`${PREFIX}note:${note.id}`]:note,[`${PREFIX}draft:${video.id}`]:''});
+ }
  async settings(value:Database['settings']){await this.store.set({[`${PREFIX}settings`]:value});}
 }

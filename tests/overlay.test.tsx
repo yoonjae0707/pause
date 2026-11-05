@@ -30,8 +30,12 @@ it('shows only one overlay, permits immediate reflection saving, delays skip for
  for(let i=1;i<=40;i++)await act(async()=>{vi.advanceTimersByTime(1000);video.currentTime=i;video.dispatchEvent(new Event('timeupdate'));});
  await act(async()=>{video.dispatchEvent(new Event('ended'));});
  buttons=Array.from(root.querySelectorAll('.dialog button'));expect((buttons[1] as HTMLButtonElement).disabled).toBe(true);
+ const next=document.createElement('video');Object.defineProperty(next,'paused',{value:false,writable:true});
+ next.pause=vi.fn(()=>{Object.defineProperty(next,'paused',{value:true,writable:true});});next.play=vi.fn(async()=>{});
+ await act(async()=>{history.pushState({},'','/watch?v=autoplay');video.replaceWith(next);document.dispatchEvent(new Event('yt-navigate-finish'));});
+ expect(next.pause).toHaveBeenCalledTimes(1);
  await act(async()=>{vi.advanceTimersByTime(5000);});
  expect((root.querySelectorAll('.dialog button')[1] as HTMLButtonElement).disabled).toBe(false);
  await act(async()=>{(root.querySelectorAll('.dialog button')[1] as HTMLButtonElement).click();});
- expect(root.querySelector('[role="dialog"]')).toBeNull();await act(async()=>{content!.contentRoot.unmount();});vi.useRealTimers();
+ expect(root.querySelector('[role="dialog"]')).toBeNull();expect(next.play).toHaveBeenCalledTimes(1);await act(async()=>{content!.contentRoot.unmount();});vi.useRealTimers();
 });
