@@ -17,6 +17,8 @@ it('shows only one overlay, permits immediate reflection saving, delays skip for
  let buttons=Array.from(root.querySelectorAll('.dialog button'));
  expect((buttons[1] as HTMLButtonElement).disabled).toBe(true);
  const textarea=root.querySelector('.dialog textarea') as HTMLTextAreaElement;
+ const shortcut=vi.fn();document.addEventListener('keydown',shortcut,true);
+ const key=new KeyboardEvent('keydown',{key:' ',bubbles:true,composed:true,cancelable:true});textarea.dispatchEvent(key);expect(shortcut).not.toHaveBeenCalled();expect(key.defaultPrevented).toBe(false);document.removeEventListener('keydown',shortcut,true);
  await act(async()=>{Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value')!.set!.call(textarea,'A useful thought');textarea.dispatchEvent(new Event('input',{bubbles:true,composed:true}));});
  // React input events in jsdom are synthetic; use its onChange prop to exercise the save path.
  const propsKey=Object.keys(textarea).find(k=>k.startsWith('__reactProps'))!;

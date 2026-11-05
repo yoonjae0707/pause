@@ -5,7 +5,7 @@ it('preserves unsaved per-video drafts, saves captured metadata across navigatio
  (globalThis as any).IS_REACT_ACT_ENVIRONMENT=true;vi.useFakeTimers();
  const rows:Record<string,unknown>={};const listeners=new Set<()=>void>();let releaseDraft!:()=>void;const gate=new Promise<void>(resolve=>{releaseDraft=resolve;});let delay=true;
  vi.stubGlobal('chrome',{storage:{local:{get:async()=>structuredClone(rows),set:async(items:Record<string,unknown>)=>{if(delay&&items['pause:v1:draft:a'])await gate;Object.assign(rows,structuredClone(items));listeners.forEach(f=>f());}},onChanged:{addListener:(f:()=>void)=>listeners.add(f),removeListener:(f:()=>void)=>listeners.delete(f)}}});
- history.replaceState({},'','/watch?v=a');document.body.innerHTML='<h1 class="ytd-watch-metadata">Title A</h1><video></video>';const video=document.querySelector('video')!;video.currentTime=12;
+ history.replaceState({},'','/watch?v=a');document.body.innerHTML='<h1 class="ytd-watch-metadata">Title A</h1><video></video>';const video=document.querySelector('video')!;Object.defineProperty(video,'readyState',{value:1});video.currentTime=12;
  let module:typeof import('../src/content');await act(async()=>{module=await import('../src/content');});const root=document.getElementById('pause-extension')!.shadowRoot!;
  await act(async()=>{(root.querySelector('.notes-button') as HTMLButtonElement).click();});
  const edit=async(value:string)=>{const textarea=root.querySelector('.panel textarea')!;const key=Object.keys(textarea).find(k=>k.startsWith('__reactProps'))!;await act(async()=>{(textarea as any)[key].onChange({target:{value}});});};

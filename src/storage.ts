@@ -14,14 +14,16 @@ export class Repository {
    if(kind==='reflection')db.reflections.push(value as Database['reflections'][number]);
    if(kind==='shorts')db.shortsSessions.push(value as Database['shortsSessions'][number]);
    if(kind==='draft')db.drafts[id]=value as string;
+   if(kind==='draftCapture'&&value)db.draftCaptures[id]=value as Database['draftCaptures'][string];
    if(kind==='settings')Object.assign(db.settings,value);
   }
   return db;
  }
  async put(kind:'video'|'note'|'reflection'|'shorts'|'draft',id:string,value:unknown){await this.store.set({[`${PREFIX}${kind}:${id}`]:value});}
+ async writeDraft(id:string,text:string,capture:Database['draftCaptures'][string]){await this.store.set({[`${PREFIX}draft:${id}`]:text,[`${PREFIX}draftCapture:${id}`]:capture??null});}
  async saveNote(video:Database['videos'][string],note:Database['notes'][number]){
   // One storage operation: a failed draft clear must not leave a saved note to duplicate on retry.
-  await this.store.set({[`${PREFIX}video:${video.id}`]:video,[`${PREFIX}note:${note.id}`]:note,[`${PREFIX}draft:${video.id}`]:''});
+  await this.store.set({[`${PREFIX}video:${video.id}`]:video,[`${PREFIX}note:${note.id}`]:note,[`${PREFIX}draft:${video.id}`]:'',[`${PREFIX}draftCapture:${video.id}`]:null});
  }
  async settings(value:Database['settings']){await this.store.set({[`${PREFIX}settings`]:value});}
 }
