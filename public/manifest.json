@@ -1,0 +1,1 @@
+{"manifest_version":3,"name":"PAUSE — 넘기기 전에, 남겨보세요","version":"0.1.0","description":"YouTube 영상에서 얻은 생각을 기기에 기록하세요.","permissions":["storage"],"action":{"default_popup":"popup.html"},"content_scripts":[{"matches":["https://www.youtube.com/*"],"js":["content.js"],"run_at":"document_idle"}]}
