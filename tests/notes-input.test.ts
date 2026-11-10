@@ -11,10 +11,10 @@ it('captures the first nonwhitespace input, preserves it through seek and whites
 });
 it('does not invent a timestamp for unprepared video or replace an unknown capture on later edits',()=>{const v=document.createElement('video');const first=captureDraft('text',undefined,record,v)!;expect(first.timestampSeconds).toBeNull();Object.defineProperty(v,'readyState',{value:1});v.currentTime=204;expect(captureDraft('text2',first,record,v)!.timestampSeconds).toBeNull();});
 it('isolates composed editable keys before document capture without canceling text/IME defaults; cleans up',()=>{
- const host=document.createElement('div');document.body.append(host);const shadow=host.attachShadow({mode:'open'});shadow.innerHTML='<textarea></textarea><input><div contenteditable="true"></div><button>Other</button>';
+ const host=document.createElement('div');document.body.append(host);const shadow=host.attachShadow({mode:'open'});shadow.innerHTML='<textarea></textarea><input><select><option>Music</option></select><div contenteditable="true"></div><button>Other</button>';
  const youtube=vi.fn();document.addEventListener('keydown',youtube,true);document.addEventListener('keyup',youtube);document.addEventListener('keypress',youtube);
  const cleanup=isolateEditingKeys(shadow);
- for(const target of shadow.querySelectorAll('textarea,input,[contenteditable]'))for(const type of ['keydown','keyup','keypress'])for(const key of [' ','0','1','2','3','4','5','6','7','8','9','Backspace','Enter','ArrowLeft','ArrowRight','Escape','a','c','v','Process']){
+ for(const target of shadow.querySelectorAll('textarea,input,select,[contenteditable]'))for(const type of ['keydown','keyup','keypress'])for(const key of [' ','0','1','2','3','4','5','6','7','8','9','Backspace','Enter','ArrowLeft','ArrowRight','Escape','a','c','v','Process']){
   const event=new KeyboardEvent(type,{key,bubbles:true,composed:true,cancelable:true,ctrlKey:['a','c','v'].includes(key),isComposing:key==='Process'});target.dispatchEvent(event);expect(event.defaultPrevented).toBe(false);
  }
  expect(youtube).not.toHaveBeenCalled();shadow.querySelector('button')!.dispatchEvent(new KeyboardEvent('keydown',{key:' ',bubbles:true,composed:true}));expect(youtube).toHaveBeenCalledTimes(1);

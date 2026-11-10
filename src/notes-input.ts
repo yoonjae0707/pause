@@ -10,7 +10,7 @@ export function isolateEditingKeys(root:ShadowRoot){
  const stop=(event:KeyboardEvent)=>{
   if(event.key==='Tab')return; // Keep native focus navigation and the reflection focus trap.
   const editable=event.composedPath().some(node=>node instanceof HTMLElement&&root.contains(node)&&
-   (node.matches('input,textarea')||node.isContentEditable||node.getAttribute('contenteditable')==='true'));
+   (node.matches('input,textarea,select')||node.isContentEditable||node.getAttribute('contenteditable')==='true'));
   if(editable)event.stopImmediatePropagation();
  };
  for(const name of ['keydown','keypress','keyup'])window.addEventListener(name,stop as EventListener,true);

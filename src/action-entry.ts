@@ -1,3 +1,4 @@
+import {materialActionCSS} from './material-theme';
 const selectors=[
  'ytd-watch-metadata #actions #top-level-buttons-computed',
  'ytd-watch-metadata #actions-inner #top-level-buttons-computed',
@@ -8,7 +9,7 @@ const css=`:host{display:inline-flex;flex:0 0 auto;margin-inline-start:8px;color
 export class ActionEntry {
  private host=document.createElement('span');private button:HTMLButtonElement;private observer:MutationObserver;private resize:ResizeObserver|undefined;private frame:number|undefined;private disposed=false;private placed=false;
  constructor(private toggle:()=>void,private placement:(placed:boolean)=>void){
-  this.host.dataset.pauseAction='true';const root=this.host.attachShadow({mode:'open'});const style=document.createElement('style');style.textContent=css;root.append(style);
+  this.host.dataset.pauseAction='true';const root=this.host.attachShadow({mode:'open'});const style=document.createElement('style');style.textContent=css+materialActionCSS;root.append(style);
   this.button=document.createElement('button');this.button.type='button';this.button.setAttribute('aria-label','PAUSE Note — 영상 메모');this.button.setAttribute('aria-expanded','false');this.button.innerHTML='<span aria-hidden="true">Ⅱ</span><span>PAUSE Note</span>';this.button.title='PAUSE 확장 프로그램 · 영상 메모';root.append(this.button);this.button.addEventListener('click',this.click);
   this.observer=new MutationObserver(records=>{if(records.some(record=>{
    if(record.target===this.host)return false;
