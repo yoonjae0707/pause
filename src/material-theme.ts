@@ -12,9 +12,9 @@ textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px sol
 @media(forced-colors:active){button,textarea,select,.panel,.dialog{border:1px solid CanvasText}button:focus-visible,textarea:focus-visible,select:focus-visible{outline-color:Highlight}}
 `;
 export const materialActionCSS=`
-:host{color:#3c4043}button{background:#f1f3f4;border-color:#dadce0;font-family:Roboto,Arial,system-ui,sans-serif;color:inherit}button:hover{background:#e8eaed}button:focus-visible{outline-color:#0b57d0}
-:host([data-dark]){color:#e8eaed}:host([data-dark]) button{background:#3c4043;border-color:#5f6368}:host([data-dark]) button:hover{background:#4a4e51}:host([data-dark]) button:focus-visible{outline-color:#a8c7fa}
-@media(forced-colors:active){button{background:ButtonFace;color:ButtonText;border-color:ButtonText}}
+button{background:var(--action-bg,#f2f2f2);color:var(--action-fg,#0f0f0f)}button:hover{background:var(--action-bg,#f2f2f2);box-shadow:inset 0 0 0 999px #0000000d}button:active{box-shadow:inset 0 0 0 999px #00000018}
+:host([data-dark]) button{background:var(--action-bg,#ffffff1a);color:var(--action-fg,#f1f1f1)}:host([data-dark]) button:hover{box-shadow:inset 0 0 0 999px #ffffff14}:host([data-dark]) button:focus-visible{outline-color:#a8c7fa}
+@media(forced-colors:active){button{background:ButtonFace;color:ButtonText;border:1px solid ButtonText}button:hover{box-shadow:none}}
 `;
 export const materialPopupCSS=`
 :root{font-family:Roboto,Arial,system-ui,sans-serif;color-scheme:light;--bg:#f8f9fa;--fg:#202124;--muted:#5f6368;--accent:#0b57d0}
