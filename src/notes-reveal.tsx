@@ -8,7 +8,7 @@ export function NotesReveal({open,children,mode='sidebar',onExited}:{open:boolea
   const node=ref.current;if(!node||!mounted)return;
   let cancelled=false,done=false;
   const reduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const duration=reduced?120:open?300:220;
+  const duration=reduced?120:mode==='sidebar'?(open?500:380):(open?300:220);
   const opacity=Number(getComputedStyle(node).opacity)||0;
   const startHeight=node.getBoundingClientRect().height;
   const endHeight=open?(node.firstElementChild as HTMLElement|null)?.scrollHeight??0:0;
@@ -16,7 +16,19 @@ export function NotesReveal({open,children,mode='sidebar',onExited}:{open:boolea
   let animation:Animation|undefined;
   if(duration&&typeof node.animate==='function'){
    if(mode==='sidebar'&&reduced&&open)node.style.height='auto';
-   const frames=mode==='sidebar'&&!reduced?[{opacity,height:startHeight+'px'},{opacity:open?1:0,height:endHeight+'px'}]:[{opacity},{opacity:open?1:0}];
+   const overshoot=Math.min(10,endHeight*.025);
+   const frames=mode==='sidebar'&&!reduced?(open?[
+    {opacity,height:startHeight+'px',offset:0},
+    {opacity:1,height:(endHeight+overshoot)+'px',offset:.72},
+    {opacity:1,height:Math.max(0,endHeight-2)+'px',offset:.9},
+    {opacity:1,height:endHeight+'px',offset:1},
+   ]:[
+    {opacity,height:startHeight+'px',offset:0},
+    {opacity:opacity*.9,height:(startHeight+Math.min(4,startHeight*.01))+'px',offset:.08},
+    {opacity:0,height:'0px',offset:.84},
+    {opacity:0,height:'2px',offset:.94},
+    {opacity:0,height:'0px',offset:1},
+   ]):[{opacity},{opacity:open?1:0}];
    animation=node.animate(frames,{duration,easing:'cubic-bezier(.2,0,0,1)',fill:'both'});animation.finished.then(finish,()=>{});
   }else{node.style.opacity=open?'1':'0';if(mode==='sidebar')node.style.height=open?'auto':'0px';}
   const timer=setTimeout(finish,duration+32);
