@@ -10,6 +10,8 @@ it('preserves unsaved per-video drafts, saves captured metadata across navigatio
  await act(async()=>{(root.querySelector('.notes-button') as HTMLButtonElement).click();});
  const edit=async(value:string)=>{const textarea=root.querySelector('.panel textarea')!;const key=Object.keys(textarea).find(k=>k.startsWith('__reactProps'))!;await act(async()=>{(textarea as any)[key].onChange({target:{value}});});};
  await edit('Draft A');
+ await act(async()=>{(root.querySelector('[aria-label="메모 패널 닫기"]') as HTMLButtonElement).click();});expect(root.querySelector('textarea')).toBeNull();
+ await act(async()=>{(root.querySelector('.notes-button') as HTMLButtonElement).click();});expect((root.querySelector('textarea') as HTMLTextAreaElement).value).toBe('Draft A');
  await act(async()=>{(root.querySelector('.panel .primary') as HTMLButtonElement).click();});
  // The draft write blocks saving while navigation changes the page title and URL.
  await act(async()=>{document.querySelector('h1')!.textContent='Title B';history.pushState({},'','/watch?v=b');document.dispatchEvent(new Event('yt-navigate-finish'));});
@@ -18,14 +20,14 @@ it('preserves unsaved per-video drafts, saves captured metadata across navigatio
  await edit('Unfinished B');
  await act(async()=>{history.pushState({},'','/watch?v=a');document.dispatchEvent(new Event('yt-navigate-finish'));});
  expect((root.querySelector('textarea') as HTMLTextAreaElement).value).toBe('');expect(root.querySelector('.note')!.textContent).toContain('Draft A');
- await act(async()=>{history.pushState({},'','/watch?v=b');document.dispatchEvent(new Event('yt-navigate-finish'));});expect((root.querySelector('textarea') as HTMLTextAreaElement).value).toBe('Unfinished B');
+ await act(async()=>{history.pushState({},'','/watch?v=b');document.dispatchEvent(new Event('yt-navigate-finish'));});expect((root.querySelector('textarea') as HTMLTextAreaElement).value).toBe('Unfinished B');expect(root.querySelector('img')!.src).toContain('/vi/b/');
  await act(async()=>{module!.contentRoot.unmount();});
  // Recreate the app against the same mock storage, analogous to reloading its content script.
  const {createRoot}=await import('react-dom/client');const React=await import('react');
  const mount=document.createElement('div');root.append(mount);const remounted=createRoot(mount);
  await act(async()=>{remounted.render(React.createElement(module!.App));});
  await act(async()=>{(root.querySelector('.notes-button') as HTMLButtonElement).click();});
- expect((root.querySelector('textarea') as HTMLTextAreaElement).value).toBe('Unfinished B');
+ expect((root.querySelector('textarea') as HTMLTextAreaElement).value).toBe('Unfinished B');expect(root.querySelector('img')!.src).toContain('/vi/b/');
  await act(async()=>{history.pushState({},'','/watch?v=a');document.dispatchEvent(new Event('yt-navigate-finish'));});
  expect(root.querySelector('.note')!.textContent).toContain('Draft A');
  const {Repository}=await import('../src/storage');const restored=await new Repository().read();expect(restored.notes).toHaveLength(1);expect(restored.notes[0].seconds).toBe(12);
