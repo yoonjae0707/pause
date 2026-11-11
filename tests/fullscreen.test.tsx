@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
-import {it,expect,vi} from 'vitest';
+import {it,expect,vi,beforeEach,afterEach} from 'vitest';
 import {act} from 'react';
+beforeEach(()=>{vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockReturnValue({x:0,y:0,left:0,top:0,right:200,bottom:48,width:200,height:48,toJSON(){}});});
+afterEach(()=>vi.restoreAllMocks());
 it('moves the existing app into fullscreen, toggles Notes in native controls, restores drafts on exit and shows reflection',async()=>{
  (globalThis as any).IS_REACT_ACT_ENVIRONMENT=true;vi.useFakeTimers();let full:Element|null=null;Object.defineProperty(document,'fullscreenElement',{get:()=>full,configurable:true});
  const rows:Record<string,unknown>={};vi.stubGlobal('chrome',{storage:{local:{get:async()=>structuredClone(rows),set:async(data:Record<string,unknown>)=>{Object.assign(rows,data);}},onChanged:{addListener:()=>{},removeListener:()=>{}}}});history.replaceState({},'','/watch?v=a');document.body.innerHTML='<div id="movie_player"><video></video><div class="ytp-right-controls"><button class="ytp-fullscreen-button">Fullscreen</button></div></div>';const player=document.querySelector('#movie_player')!;const v=document.querySelector('video')!;Object.defineProperty(v,'readyState',{value:1});Object.defineProperty(v,'duration',{value:40});Object.defineProperty(v,'paused',{value:false});v.pause=vi.fn();
@@ -18,4 +20,11 @@ it('avoids duplicate fullscreen controls, recovers replaced controls, and retain
  full=player;for(let i=0;i<4;i++)ui.sync();expect(document.querySelectorAll('[data-pause-fullscreen]')).toHaveLength(1);(document.querySelector('[data-pause-fullscreen]')!.shadowRoot!.querySelector('button') as HTMLButtonElement).click();expect(toggle).toHaveBeenCalledTimes(1);
  const next=document.createElement('div');next.className='ytp-right-controls';document.querySelector('.ytp-right-controls')!.replaceWith(next);ui.sync();expect(next.querySelector('[data-pause-fullscreen]')).not.toBeNull();next.remove();ui.sync();expect(changed).toHaveBeenLastCalledWith(true,false);expect(app.parentElement).toBe(player);
  full=document.querySelector('video');ui.sync();expect(changed).toHaveBeenLastCalledWith(false,false);expect(app.parentElement).toBe(document.documentElement);ui.dispose();app.remove();delete (document as any).fullscreenElement;
+});
+
+it('detects YouTube fullscreen class without API, follows native button row, and reports missing/hidden controls',async()=>{
+ const {FullscreenUI}=await import('../src/fullscreen-ui');history.replaceState({},'','/watch?v=a');document.body.innerHTML='<div id="movie_player"><div class="new-controls"><button class="ytp-fullscreen-button">Exit fullscreen</button></div></div>';const player=document.querySelector('#movie_player')!;const app=document.createElement('div');document.documentElement.append(app);const changed=vi.fn();const ui=new FullscreenUI(app,vi.fn(),changed);expect(changed).toHaveBeenLastCalledWith(false,false);
+ player.classList.add('ytp-fullscreen');ui.sync();expect(changed).toHaveBeenLastCalledWith(true,true);expect(app.parentElement).toBe(player);expect(document.querySelector('.new-controls [data-pause-fullscreen]')).not.toBeNull();
+ (document.querySelector('.new-controls') as HTMLElement).style.display='none';ui.sync();expect(changed).toHaveBeenLastCalledWith(true,false);expect(app.hasAttribute('data-fullscreen')).toBe(true);
+ player.classList.remove('ytp-fullscreen');ui.sync();expect(app.parentElement).toBe(document.documentElement);expect(changed).toHaveBeenLastCalledWith(false,false);ui.dispose();app.remove();
 });

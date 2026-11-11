@@ -8,7 +8,7 @@ it('shares one Notes panel between action entry and FAB across layout changes',a
  history.replaceState({},'','/watch?v=a');document.body.innerHTML='<video></video><ytd-watch-metadata><div id="actions"><div id="top-level-buttons-computed"></div></div></ytd-watch-metadata>';
  let content:typeof import('../src/content');await act(async()=>{content=await import('../src/content');});await act(async()=>{vi.advanceTimersByTime(32);});
  const root=document.getElementById('pause-extension')!.shadowRoot!;const action=()=>document.querySelector('[data-pause-action]')!.shadowRoot!.querySelector('button')!;
- expect((root.querySelector('.notes-button') as HTMLButtonElement).hidden).toBe(true);await act(async()=>{action().click();});expect(root.querySelectorAll('textarea')).toHaveLength(1);expect(action().getAttribute('aria-expanded')).toBe('true');
+ expect((root.querySelector('.notes-button') as HTMLButtonElement).hidden).toBe(true);await act(async()=>{action().click();});expect(root.querySelectorAll('textarea')).toHaveLength(1);expect(root.querySelector('.notes-floating-enter')).not.toBeNull();expect(action().getAttribute('aria-expanded')).toBe('true');
  const textarea=root.querySelector('textarea')!;const key=Object.keys(textarea).find(k=>k.startsWith('__reactProps'))!;await act(async()=>{(textarea as any)[key].onChange({target:{value:'draft'}});});
  await act(async()=>{vi.stubGlobal('innerWidth',500);window.dispatchEvent(new Event('resize'));vi.advanceTimersByTime(32);});
  expect((root.querySelector('.notes-button') as HTMLButtonElement).hidden).toBe(false);expect(root.querySelectorAll('textarea')).toHaveLength(1);expect((root.querySelector('textarea') as HTMLTextAreaElement).value).toBe('draft');

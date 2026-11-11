@@ -224,3 +224,11 @@ YouTube 플레이어가 DOM 전체화면으로 들어가면 기존 PAUSE 앱 호
 플레이어 컨테이너가 아닌 `<video>` 자체의 네이티브 전체화면은 오버레이를 올릴 수 없어 지원 대상으로 주장하지 않습니다. YouTube 컨트롤 DOM 실험/브라우저별 동작은 수동 검증이 필요합니다. 실제 Chrome에서 전체화면 진입→PAUSE 아이콘→Space/숫자/IME 입력→초안 유지하며 나가기/재진입→메모 저장, 종료 성찰 표시/5초 건너뛰기를 확인하세요. 자동 테스트의 fullscreenElement 모의는 실제 브라우저 전체화면 검증을 대체하지 않습니다.
 
 이 환경의 headless Chromium 실제 Fullscreen API 요청은 Promise가 완료되지 않고 fullscreenElement도 설정되지 않아 실제 진입을 검증하지 못했습니다. 전체화면 배치/상태 유지 테스트는 jsdom 모의 결과이며, 설치한 데스크톱 Chrome YouTube에서 검증 대기입니다.
+
+### 애니메이션 누락 / 전체화면 FAB 겹침 보완
+
+추천 열에 붙지 못해 일반 카드로 열리는 경로에 진입 애니메이션이 누락된 것을 확인해 동일한 spring keyframe을 연결했습니다. 추천 열의 높이 전환과 모션 줄이기 정책은 유지합니다. 움직임 줄이기가 켜지면 의도적으로 애니메이션을 생략합니다(`matchMedia('(prefers-reduced-motion: reduce)').matches`로 확인 가능).
+
+전체화면은 Fullscreen API 외에 `#movie_player.ytp-fullscreen`, `.html5-video-player.ytp-fullscreen`, `ytd-watch-flexy[fullscreen] #movie_player` 상태도 인식합니다. 기본 전체화면 버튼의 부모 행을 우선 사용하고, 보이는 right-controls/chrome-controls/chrome-bottom으로 대체합니다. 컨트롤을 못 찾거나 숨겨져 있으면 하단의 큰 텍스트 FAB 대신 **상단 우측 44px 아이콘**만 표시해 하단 조작계를 덮지 않습니다. 크기나 화면 비율만으로 전체화면을 추측하지 않습니다. 사용자 스크린샷의 실제 DOM은 아직 확보하지 못했으므로 해당 환경의 정확한 컨트롤 미탐지 원인은 미확정입니다.
+
+로컬 Chromium 합성 화면에서 일반 카드의 중간 프레임(transform/opacity)→최종 프레임 변화, YouTube fullscreen 클래스 시뮬레이션의 컨트롤 아이콘 삽입, 컨트롤 제거 후 상단 아이콘 크기/위치를 측정했습니다. 실제 YouTube 전체화면 검증을 대체하지 않습니다. 새 빌드의 PAUSE-BUILD.json 커밋을 확인하고 확장 프로그램·YouTube 탭을 둘 다 새로고침한 뒤 일반/추천 열/전체화면에서 열기를 재확인하세요.
