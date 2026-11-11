@@ -13,7 +13,9 @@ textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px sol
 @media(forced-colors:active){.notes-thumbnail,.notes-thumbnail-fade{display:none}.notes-header{background:Canvas}.notes-close{background:ButtonFace;color:ButtonText}}
 .panel,.dialog,textarea,select,button,.note,.exclusion,.notes-close{border:0}.notes-thumbnail-fade{border:0}.dialog.reflection-card{padding:0;overflow:auto}.reflection-card .notes-header{min-height:190px}.reflection-body{padding:0 24px 24px}.reflection-body>h2{font-size:22px}.note{border:0;margin-top:8px;padding-top:16px}
 .notes-reveal{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows 480ms cubic-bezier(.22,1,.36,1),opacity 200ms ease}.notes-reveal[data-open]{grid-template-rows:1fr;opacity:1}.notes-reveal-clip{min-height:0;overflow:hidden}.notes-reveal:not([data-open]){pointer-events:none}.notes-reveal[data-open] .notes-card{animation:pause-notes-spring 520ms both;transform-origin:50% 0}@keyframes pause-notes-spring{0%{opacity:0;transform:translateY(-12px) scale(.97)}65%{opacity:1;transform:translateY(3px) scale(1.012)}83%{transform:translateY(-1px) scale(.998)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@media(prefers-reduced-motion:reduce){button,.notes-reveal{transition:none}.notes-reveal[data-open] .notes-card{animation:none}}
+:host([data-fullscreen]) .panel{right:24px;bottom:80px;width:360px;max-height:calc(100dvh - 112px)}:host([data-fullscreen]) .notes-card{animation:pause-notes-spring 420ms both}:host([data-fullscreen]) .notes-button{bottom:80px}:host([data-fullscreen]) .backdrop{background:#0009}
+@media(max-width:480px){:host([data-fullscreen]) .panel{left:12px;right:12px;width:auto}}
+@media(prefers-reduced-motion:reduce){button,.notes-reveal{transition:none}:host([data-fullscreen]) .notes-card{animation:none}.notes-reveal[data-open] .notes-card{animation:none}}
 @media(forced-colors:active){button,textarea,select,.panel,.dialog{border:1px solid CanvasText}button:focus-visible,textarea:focus-visible,select:focus-visible{outline-color:Highlight}}
 `;
 export const materialActionCSS=`

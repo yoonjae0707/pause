@@ -1,3 +1,4 @@
+import {FullscreenUI} from './fullscreen-ui';
 import {NotesReveal} from './notes-reveal';
 import {createPortal} from 'react-dom';
 import {SidebarEntry} from './sidebar-entry';
@@ -24,7 +25,7 @@ const syncTheme=()=>{for(const root of [host,dockHost])root.toggleAttribute('dat
 
 export function App(){
  const [db,setDb]=useState<Database|null>(null);const [ctx,setCtx]=useState<PlaybackContext|null>(null);const [open,setOpen]=useState(false);
- const [docked,setDocked]=useState(false);
+ const [docked,setDocked]=useState(false);const [fullscreenPlaced,setFullscreenPlaced]=useState(false);const [fullscreenActive,setFullscreenActive]=useState(false);const fullscreenUI=React.useRef<FullscreenUI|null>(null);
  const [actionPlaced,setActionPlaced]=useState(false);const entry=React.useRef<ActionEntry|null>(null);
  const [reflection,setReflection]=useState<{ctx:PlaybackContext;record:VideoRecord;started:number}|null>(null);
  const [text,setText]=useState('');const [drafts,setDrafts]=useState<Record<string,string>>({});const [error,setError]=useState('');const [busy,setBusy]=useState(false);const [tick,setTick]=useState(Date.now());
@@ -33,7 +34,8 @@ export function App(){
  const captures=React.useRef<Record<string,DraftCapture|undefined>>({});
  const controllerRef=React.useRef<Controller|null>(null);const hold=React.useRef<PlaybackHold|null>(null);
  useEffect(()=>{if(!ctx||!db?.settings.enabled){setActionPlaced(false);return;}try{const instance=new ActionEntry(()=>setOpen(value=>!value),setActionPlaced);entry.current=instance;instance.setExpanded(open);return()=>{instance.dispose();entry.current=null;};}catch{setActionPlaced(false);}},[!!ctx,db?.settings.enabled]);
- useEffect(()=>{entry.current?.setExpanded(open);dockHost.toggleAttribute('data-notes-open',open&&docked);return()=>dockHost.removeAttribute('data-notes-open');},[open,actionPlaced,docked]);
+ useEffect(()=>{entry.current?.setExpanded(open);fullscreenUI.current?.setExpanded(open);dockHost.toggleAttribute('data-notes-open',open&&docked);return()=>dockHost.removeAttribute('data-notes-open');},[open,actionPlaced,docked]);
+ useEffect(()=>{if(!db?.settings.enabled){setFullscreenPlaced(false);setFullscreenActive(false);return;}const ui=new FullscreenUI(host,()=>setOpen(value=>!value),(active,placed)=>{setFullscreenActive(active);setFullscreenPlaced(placed);});fullscreenUI.current=ui;ui.setExpanded(open);return()=>{ui.dispose();fullscreenUI.current=null;};},[db?.settings.enabled]);
  useEffect(()=>{syncTheme();const observer=new MutationObserver(syncTheme);observer.observe(document.documentElement,{attributes:true,attributeFilter:['dark']});return()=>observer.disconnect();},[]);
  useEffect(()=>{const a=isolateEditingKeys(shadow),b=isolateEditingKeys(dockShadow);return()=>{a();b();};},[]);
  useEffect(()=>{if(!ctx||!db?.settings.enabled){setDocked(false);return;}try{const sidebar=new SidebarEntry(dockHost,setDocked);return()=>sidebar.dispose();}catch{setDocked(false);}},[!!ctx,db?.settings.enabled]);
@@ -76,7 +78,7 @@ export function App(){
   setDrafts(d=>({...d,[id]:value}));draftQueue.current=draftQueue.current.catch(()=>{}).then(()=>repo.writeDraft(id,value,capture));draftQueue.current.catch(()=>setError('초안을 저장하지 못했습니다.'));};
  const time=(s:number)=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
  const notesCard=ctx&&db?(<section className="panel notes-card" aria-label="영상 메모"><NotesHeader key={ctx.id} videoId={ctx.id} onClose={()=>setOpen(false)}/><div className="notes-body"><p className="muted">첫 비공백 입력 시점을 기록해요. 초안은 자동 보존됩니다.</p><textarea aria-label="메모" value={drafts[ctx.id]??''} disabled={busy} onChange={e=>updateDraft(e.target.value)}/><button className="primary" disabled={busy||!drafts[ctx.id]?.trim()} onClick={saveNote}>메모 저장</button>{db.notes.filter(n=>n.videoId===ctx.id).sort((a,b)=>a.seconds-b.seconds).map(n=><div className="note" key={n.id}><button onClick={()=>{ctx.video.currentTime=n.seconds;}}>{time(n.seconds)}</button><p>{n.text}</p></div>)}{error&&<p role="alert">{error}</p>}</div></section>):null;
- return <>{ctx&&db?.settings.enabled&&<><button hidden={actionPlaced||(docked&&open)} className="notes-button" onClick={()=>setOpen(!open)} aria-expanded={open}>PAUSE Notes</button>{!open&&error&&<p className="panel" role="alert">{error}</p>}{docked?createPortal(<NotesReveal open={open}>{notesCard}</NotesReveal>,dockMount):open&&notesCard}</>}
+ return <>{ctx&&db?.settings.enabled&&<><button hidden={fullscreenActive?fullscreenPlaced:actionPlaced||(docked&&open)} className="notes-button" onClick={()=>setOpen(!open)} aria-expanded={open}>PAUSE Notes</button>{!open&&error&&<p className="panel" role="alert">{error}</p>}{docked?createPortal(<NotesReveal open={open}>{notesCard}</NotesReveal>,dockMount):open&&notesCard}</>}
  {reflection&&<div className="backdrop"><section className="dialog reflection-card" role="dialog" aria-modal="true" aria-labelledby="pause-title"><NotesHeader key={reflection.record.id} videoId={reflection.record.id} title="PAUSE · 잠깐 돌아보기"/><div className="reflection-body"><p className="muted">넘기기 전에, 남겨보세요.</p><h2 id="pause-title">이 영상에서 무엇을 얻었나요?</h2><p>{reflection.record.title}</p><textarea autoFocus aria-label="영상 성찰" placeholder="기억하고 싶은 한 가지 생각" value={text} onChange={e=>setText(e.target.value)} disabled={busy}/><div className="row"><button className="primary" onClick={saveReflection} disabled={busy||!text.trim()}>기록하고 계속</button><button onClick={finish} disabled={busy||Math.max(tick,Date.now())-reflection.started<5000}>{Math.max(tick,Date.now())-reflection.started<5000?`${Math.ceil((5000-(Math.max(tick,Date.now())-reflection.started))/1000)}초 후 건너뛰기`:'그냥 건너뛰기'}</button></div><p className="muted">기록하지 않아도 괜찮아요. 모든 기록은 이 기기에만 저장됩니다.</p>{error&&<p role="alert">{error}</p>}</div></section></div>}</>;
 }
 export const contentRoot=createRoot(mount);
