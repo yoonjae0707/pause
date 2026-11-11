@@ -10,7 +10,7 @@ it('preserves unsaved per-video drafts, saves captured metadata across navigatio
  await act(async()=>{(root.querySelector('.notes-button') as HTMLButtonElement).click();});
  const edit=async(value:string)=>{const textarea=root.querySelector('.panel textarea')!;const key=Object.keys(textarea).find(k=>k.startsWith('__reactProps'))!;await act(async()=>{(textarea as any)[key].onChange({target:{value}});});};
  await edit('Draft A');
- await act(async()=>{(root.querySelector('[aria-label="메모 패널 닫기"]') as HTMLButtonElement).click();});expect(root.querySelector('textarea')).toBeNull();
+ await act(async()=>{(root.querySelector('[aria-label="메모 패널 닫기"]') as HTMLButtonElement).click();});expect(root.querySelector('.presence-floating[aria-hidden="true"]')).not.toBeNull();await act(async()=>{vi.advanceTimersByTime(260);});expect(root.querySelector('textarea')).toBeNull();
  await act(async()=>{(root.querySelector('.notes-button') as HTMLButtonElement).click();});expect((root.querySelector('textarea') as HTMLTextAreaElement).value).toBe('Draft A');
  await act(async()=>{(root.querySelector('.panel .primary') as HTMLButtonElement).click();});
  // The draft write blocks saving while navigation changes the page title and URL.

@@ -24,6 +24,6 @@ it('keeps Notes and timestamp saves available for an excluded video, suppresses 
  expect(root.querySelector('[role="dialog"]')).toBeNull();expect(root.querySelector('.notes-button')).not.toBeNull();
  await act(async()=>{history.pushState({},'','/watch?v=b');video.currentTime=0;document.dispatchEvent(new Event('yt-navigate-finish'));});
  for(let i=1;i<=40;i++)await act(async()=>{vi.advanceTimersByTime(1000);video.currentTime=i;video.dispatchEvent(new Event('timeupdate'));});await act(async()=>{video.dispatchEvent(new Event('ended'));});expect(root.querySelectorAll('[role="dialog"]')).toHaveLength(1);
- await act(async()=>{vi.advanceTimersByTime(5000);});await act(async()=>{(root.querySelectorAll('.dialog button')[1] as HTMLButtonElement).click();});expect(root.querySelector('[role="dialog"]')).toBeNull();
+ await act(async()=>{vi.advanceTimersByTime(5000);});await act(async()=>{(root.querySelectorAll('.dialog button')[1] as HTMLButtonElement).click();});await act(async()=>{vi.advanceTimersByTime(260);});expect(root.querySelector('[role="dialog"]')).toBeNull();
  await act(async()=>{content!.contentRoot.unmount();});vi.useRealTimers();vi.unstubAllGlobals();
 });

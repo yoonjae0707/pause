@@ -26,7 +26,7 @@ it('shows only one overlay, permits immediate reflection saving, delays skip for
  expect((root.querySelector('.dialog button') as HTMLButtonElement).disabled).toBe(false);
  await act(async()=>{(root.querySelector('.dialog button') as HTMLButtonElement).click();});
  expect(Object.keys(rows).some(k=>k.startsWith('pause:v1:reflection:'))).toBe(true);
- expect(root.querySelector('[role="dialog"]')).toBeNull();
+ await act(async()=>{vi.advanceTimersByTime(260);});expect(root.querySelector('[role="dialog"]')).toBeNull();
  // A new video receives an independent intervention.
  await act(async()=>{history.pushState({},'','/watch?v=b');video.currentTime=0;document.dispatchEvent(new Event('yt-navigate-finish'));});
  for(let i=1;i<=40;i++)await act(async()=>{vi.advanceTimersByTime(1000);video.currentTime=i;video.dispatchEvent(new Event('timeupdate'));});
@@ -39,5 +39,5 @@ it('shows only one overlay, permits immediate reflection saving, delays skip for
  await act(async()=>{vi.advanceTimersByTime(5000);});
  expect((root.querySelectorAll('.dialog button')[1] as HTMLButtonElement).disabled).toBe(false);
  await act(async()=>{(root.querySelectorAll('.dialog button')[1] as HTMLButtonElement).click();});
- expect(root.querySelector('[role="dialog"]')).toBeNull();expect(next.play).toHaveBeenCalledTimes(1);await act(async()=>{content!.contentRoot.unmount();});vi.useRealTimers();
+ await act(async()=>{vi.advanceTimersByTime(260);});expect(root.querySelector('[role="dialog"]')).toBeNull();expect(next.play).toHaveBeenCalledTimes(1);await act(async()=>{content!.contentRoot.unmount();});vi.useRealTimers();
 });

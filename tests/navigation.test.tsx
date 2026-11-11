@@ -15,6 +15,7 @@ it('defers a requested watch link during reflection, then restores it after skip
  const click=new MouseEvent('click',{bubbles:true,cancelable:true});document.querySelector('a')!.dispatchEvent(click);expect(click.defaultPrevented).toBe(true);expect(navigate).not.toHaveBeenCalled();
  await act(async()=>{vi.advanceTimersByTime(5000);});
  await act(async()=>{(root.querySelectorAll('.dialog button')[1] as HTMLButtonElement).click();});
+ expect(navigate).not.toHaveBeenCalled();await act(async()=>{vi.advanceTimersByTime(260);});
  expect(navigate).toHaveBeenCalledExactlyOnceWith(new URL('/watch?v=requested',location.origin).href);
  await act(async()=>{content!.contentRoot.unmount();});vi.useRealTimers();vi.unstubAllGlobals();
 });
