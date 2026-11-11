@@ -1,0 +1,24 @@
+// @vitest-environment jsdom
+import {it,expect,vi} from 'vitest';
+import {act} from 'react';
+it('shows one Notes at recommendation top, preserves drafts through narrow layout, and keeps reflection separate',async()=>{
+ (globalThis as any).IS_REACT_ACT_ENVIRONMENT=true;vi.useFakeTimers();vi.stubGlobal('innerWidth',1200);vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockReturnValue({x:0,y:0,left:0,top:0,right:400,bottom:600,width:400,height:600,toJSON(){}});
+ const rows:Record<string,unknown>={};vi.stubGlobal('chrome',{storage:{local:{get:async()=>structuredClone(rows),set:async(data:Record<string,unknown>)=>{Object.assign(rows,data);}},onChanged:{addListener:()=>{},removeListener:()=>{}}}});
+ history.replaceState({},'','/watch?v=a');document.body.innerHTML='<video></video><ytd-watch-flexy><div id="secondary"><div id="secondary-inner"><div>recommendations</div></div></div></ytd-watch-flexy>';const video=document.querySelector('video')!;Object.defineProperty(video,'readyState',{value:1});Object.defineProperty(video,'duration',{value:40});Object.defineProperty(video,'paused',{value:false});video.pause=vi.fn();
+ let mod:typeof import('../src/content');await act(async()=>{mod=await import('../src/content');});await act(async()=>{vi.advanceTimersByTime(32);});
+ const root=document.querySelector('#pause-extension')!.shadowRoot!;const dock=document.querySelector<HTMLElement>('[data-pause-sidebar]')!;expect(document.querySelector('#secondary-inner')!.firstElementChild).toBe(dock);expect(dock.shadowRoot!.querySelectorAll('textarea')).toHaveLength(1);expect(root.querySelector('textarea')).toBeNull();expect(dock.shadowRoot!.querySelector('select')).toBeNull();
+ const top=document.querySelector('#secondary-inner')!;top.prepend(document.createElement('div'));await act(async()=>{await Promise.resolve();vi.advanceTimersByTime(32);});expect(top.firstElementChild).toBe(dock);
+ const replacement=document.createElement('div');replacement.id='secondary-inner';top.replaceWith(replacement);await act(async()=>{await Promise.resolve();vi.advanceTimersByTime(32);});expect(replacement.firstElementChild).toBe(dock);
+ video.currentTime=12;const input=dock.shadowRoot!.querySelector('textarea')!;const key=Object.keys(input).find(k=>k.startsWith('__reactProps'))!;await act(async()=>{(input as any)[key].onChange({target:{value:'draft beside recommendations'}});});
+ const shortcut=vi.fn();document.addEventListener('keydown',shortcut,true);input.dispatchEvent(new KeyboardEvent('keydown',{key:' ',bubbles:true,composed:true}));expect(shortcut).not.toHaveBeenCalled();document.removeEventListener('keydown',shortcut,true);
+ await act(async()=>{vi.stubGlobal('innerWidth',700);window.dispatchEvent(new Event('resize'));vi.advanceTimersByTime(32);});expect(document.querySelector('[data-pause-sidebar]')).toBeNull();expect((root.querySelector('textarea') as HTMLTextAreaElement).value).toBe('draft beside recommendations');
+ await act(async()=>{vi.stubGlobal('innerWidth',1200);window.dispatchEvent(new Event('resize'));vi.advanceTimersByTime(32);});expect(dock.shadowRoot!.querySelectorAll('textarea')).toHaveLength(1);expect(root.querySelector('textarea')).toBeNull();
+ video.currentTime=0;video.dispatchEvent(new Event('seeking'));video.dispatchEvent(new Event('seeked'));for(let i=1;i<=40;i++)await act(async()=>{vi.advanceTimersByTime(1000);video.currentTime=i;video.dispatchEvent(new Event('timeupdate'));});await act(async()=>{video.dispatchEvent(new Event('ended'));});
+ expect(root.querySelector('[role="dialog"]')).not.toBeNull();expect(root.querySelector('.dialog img')!.getAttribute('src')).toContain('/vi/a/');expect(root.querySelector('.dialog .notes-close')).toBeNull();
+ await act(async()=>{mod!.contentRoot.unmount();});expect(document.querySelector('[data-pause-sidebar]')).toBeNull();vi.useRealTimers();vi.restoreAllMocks();vi.unstubAllGlobals();
+});
+it('discovers the recommendation column when its content arrives after initial mount',async()=>{
+ const {SidebarEntry}=await import('../src/sidebar-entry');vi.useFakeTimers();vi.stubGlobal('innerWidth',1200);history.replaceState({},'','/watch?v=a');document.body.innerHTML='<ytd-watch-flexy><div id="secondary-inner"></div></ytd-watch-flexy>';
+ vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockImplementation(function(this:HTMLElement){return {x:0,y:0,left:0,top:0,width:400,height:this.childElementCount?600:0,right:400,bottom:600,toJSON(){}};});
+ const host=document.createElement('div');const placed=vi.fn();const entry=new SidebarEntry(host,placed);entry.refresh();expect(host.isConnected).toBe(false);document.querySelector('#secondary-inner')!.append(document.createElement('div'));await Promise.resolve();vi.advanceTimersByTime(32);expect(host.isConnected).toBe(true);expect(placed).toHaveBeenLastCalledWith(true);entry.dispose();vi.restoreAllMocks();vi.useRealTimers();vi.unstubAllGlobals();
+});

@@ -16,6 +16,7 @@ export class Repository {
    if(kind==='draft')db.drafts[id]=value as string;
    if(kind==='draftCapture'&&value)db.draftCaptures[id]=value as Database['draftCaptures'][string];
    if(kind==='exclusion'&&typeof value==='string'&&Object.hasOwn(exclusionLabels,value))db.reflectionExclusions[id]=value as ExclusionCategory;
+   if(kind==='exclusion'&&Array.isArray(value)){const reasons=value.filter((v):v is ExclusionCategory=>typeof v==='string'&&Object.hasOwn(exclusionLabels,v));if(reasons.length)db.reflectionExclusions[id]=reasons;}
    if(kind==='settings')Object.assign(db.settings,value);
   }
   return db;
@@ -26,6 +27,6 @@ export class Repository {
   // One storage operation: a failed draft clear must not leave a saved note to duplicate on retry.
   await this.store.set({[`${PREFIX}video:${video.id}`]:video,[`${PREFIX}note:${note.id}`]:note,[`${PREFIX}draft:${video.id}`]:'',[`${PREFIX}draftCapture:${video.id}`]:null});
  }
- async excludeReflection(id:string,category:ExclusionCategory|null){await this.store.set({[`${PREFIX}exclusion:${id}`]:category});}
+ async excludeReflection(id:string,category:ExclusionCategory|ExclusionCategory[]|null){await this.store.set({[`${PREFIX}exclusion:${id}`]:category});}
  async settings(value:Database['settings']){await this.store.set({[`${PREFIX}settings`]:value});}
 }

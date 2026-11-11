@@ -14,8 +14,8 @@ it('keeps Notes and timestamp saves available for an excluded video, suppresses 
  vi.stubGlobal('chrome',{storage:{local:{get:async()=>structuredClone(rows),set:async(data:Record<string,unknown>)=>{Object.assign(rows,structuredClone(data));listeners.forEach(f=>f());}},onChanged:{addListener:(f:()=>void)=>listeners.add(f),removeListener:(f:()=>void)=>listeners.delete(f)}}});
  history.replaceState({},'','/watch?v=a');document.body.innerHTML='<video></video>';const video=document.querySelector('video')!;Object.defineProperty(video,'duration',{value:40});Object.defineProperty(video,'readyState',{value:1});Object.defineProperty(video,'paused',{value:false});video.pause=vi.fn();
  let content:typeof import('../src/content');await act(async()=>{content=await import('../src/content');});const root=document.getElementById('pause-extension')!.shadowRoot!;
- await act(async()=>{(root.querySelector('.notes-button') as HTMLButtonElement).click();});const select=root.querySelector('select')!;const props=Object.keys(select).find(k=>k.startsWith('__reactProps'))!;
- await act(async()=>{(select as any)[props].onChange({target:{value:'music'}});});expect((await new Repository().read()).reflectionExclusions.a).toBe('music');
+ await act(async()=>{(root.querySelector('.notes-button') as HTMLButtonElement).click();});expect(root.querySelector('select')).toBeNull();
+ await act(async()=>{await new Repository().excludeReflection('a','music');});expect((await new Repository().read()).reflectionExclusions.a).toBe('music');
  video.currentTime=12;const textarea=root.querySelector('textarea')!;const key=Object.keys(textarea).find(k=>k.startsWith('__reactProps'))!;await act(async()=>{(textarea as any)[key].onChange({target:{value:'keep this note'}});});video.currentTime=20;
  await act(async()=>{(root.querySelector('.panel .primary') as HTMLButtonElement).click();});expect((await new Repository().read()).notes[0].seconds).toBe(12);
  // Reset the tracker baseline after the simulated seek; exclusions never alter eligibility policy.

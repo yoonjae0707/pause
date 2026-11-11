@@ -13,6 +13,8 @@ manifest = json.loads((DIST / 'manifest.json').read_text())
 assert manifest['manifest_version'] == 3
 assert manifest['permissions'] == ['storage']
 required = [manifest['action']['default_popup']]
+if 'options_ui' in manifest:
+    required.append(manifest['options_ui']['page'])
 required += [p for entry in manifest['content_scripts'] for p in entry['js']]
 assert all((DIST / p).is_file() for p in required), 'Incomplete build; run npm run build'
 assert 'process.env.NODE_ENV' not in (DIST / 'content.js').read_text()
