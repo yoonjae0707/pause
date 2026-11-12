@@ -28,7 +28,10 @@ info = {
 }
 (DIST / 'PAUSE-BUILD.json').write_text(json.dumps(info, indent=2) + '\n')
 OUT.mkdir(exist_ok=True)
-archive = OUT / f"pause-chrome-{manifest['version']}-task002.zip"
+# Name the ZIP after the build commit so an old package can never be mistaken for a new one.
+archive = OUT / f"pause-chrome-{manifest['version']}-{info['commit'][:7]}{'-dirty' if info['dirtyWorktree'] else ''}.zip"
+for stale in OUT.glob('pause-chrome-*.zip'):
+    stale.unlink()
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as output:
     for path in sorted(DIST.rglob('*')):
         if path.is_file():

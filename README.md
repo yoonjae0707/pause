@@ -21,20 +21,20 @@ npm run package:chrome
 
 - `dist/`: Chrome에 로드할 폴더. 바로 아래에 `manifest.json`, `content.js`, `popup.html`, `assets/`가 있습니다.
 - `dist/PAUSE-BUILD.json`: 빌드 커밋, 미커밋 변경 여부, 빌드 시각, Node 버전, lockfile 해시. 검증한 버전 식별용이며 메모/비밀값은 포함하지 않습니다.
-- `artifacts/pause-chrome-0.1.0-task002.zip`: **ZIP 바로 안에 manifest.json이 있는** 설치 패키지.
+- `artifacts/pause-chrome-0.1.0-<커밋 7자리>.zip`: **ZIP 바로 안에 manifest.json이 있는** 설치 패키지. 파일 이름의 커밋이 `PAUSE-BUILD.json`의 `commit`과 같습니다(미커밋 변경이 있으면 `-dirty`). 새로 만들면 이전 ZIP은 지워집니다.
 - `artifacts/SHA256SUMS`: 위 ZIP의 SHA-256.
 
 ### PC로 가져오는 방법
 
 클라우드의 `/workspace/pause/dist` 또는 `/workspace/...zip` 경로는 **사용자 PC에서 열 수 있는 다운로드 URL이 아닙니다**. 이 문서의 로컬 파일 링크도 배포 링크가 아닙니다. GitHub 소스의 **Code → Download ZIP**에는 빌드 산출물이 없습니다.
 
-권장 방법은 GitHub Actions 아티팩트입니다. 이 브랜치의 `.github/workflows/chrome-build.yml`은 push/PR에서 테스트와 빌드를 실행하고 `dist/`를 `pause-chrome-task002`라는 아티팩트로 14일간 보관합니다. 릴리스나 운영 배포는 만들지 않습니다.
+권장 방법은 GitHub Actions 아티팩트입니다. 이 브랜치의 `.github/workflows/chrome-build.yml`은 push/PR에서 테스트와 빌드를 실행하고 `dist/`를 `pause-chrome-<커밋 SHA>`라는 아티팩트로 14일간 보관합니다. 릴리스나 운영 배포는 만들지 않습니다.
 
 1. GitHub에서 이 저장소의 **Actions → Chrome validation build**를 엽니다. 작업 브랜치 `feature/pause-longform-mvp`와 최신 커밋의 실행을 선택합니다.
 2. 테스트와 빌드, 업로드 단계가 성공했는지 확인합니다. **성공한 원격 실행을 확인하기 전에는 다운로드 가능한 아티팩트가 있다고 간주하지 마세요.** Actions 비활성화·워크플로 파일 push 권한 부족·용량 제한 시 아티팩트가 생기지 않을 수 있습니다. `workflow_dispatch` 버튼은 워크플로가 기본 브랜치에 없으면 표시되지 않을 수 있습니다.
-3. 실행 상세의 **Artifacts → pause-chrome-task002**를 클릭해 `pause-chrome-task002.zip`을 PC에 다운로드합니다. GitHub 로그인과 저장소 읽기 권한이 필요합니다. 만료 시 새 push로 다시 빌드하거나 아래 PC 빌드를 사용합니다.
-4. 예를 들어 PC의 `Downloads/PAUSE/task002/`에 압축을 풉니다. **그 폴더 바로 아래에 `manifest.json`이 있는지 확인**합니다. GitHub Actions ZIP은 dist 내용 자체를 담으므로 내부 ZIP을 다시 풀 필요가 없습니다.
-5. 클라우드 파일 다운로드 기능이 별도로 제공된다면 `artifacts/pause-chrome-0.1.0-task002.zip`을 내려받아 같은 방식으로 압축을 풀 수 있습니다. 이 작업 환경에서는 파일 업로드/다운로드 URL 발급 도구가 제공되지 않아 해당 링크를 발급하지 않았습니다.
+3. 실행 상세의 **Artifacts → pause-chrome-<커밋 SHA>**를 클릭해 같은 이름의 ZIP을 PC에 다운로드합니다. GitHub 로그인과 저장소 읽기 권한이 필요합니다. 만료 시 새 push로 다시 빌드하거나 아래 PC 빌드를 사용합니다.
+4. 예를 들어 PC의 `Downloads/PAUSE/task002/`에 압축을 풉니다. 이미 설치해 쓰던 폴더가 있으면 **그 폴더에 덮어써야** 확장 ID와 저장된 기록이 유지됩니다(폴더 이름은 그대로 둡니다). **그 폴더 바로 아래에 `manifest.json`이 있는지 확인**합니다. GitHub Actions ZIP은 dist 내용 자체를 담으므로 내부 ZIP을 다시 풀 필요가 없습니다.
+5. 클라우드 파일 다운로드 기능이 별도로 제공된다면 `artifacts/pause-chrome-0.1.0-<커밋 7자리>.zip`을 내려받아 같은 방식으로 압축을 풀 수 있습니다. 이 작업 환경에서는 파일 업로드/다운로드 URL 발급 도구가 제공되지 않아 해당 링크를 발급하지 않았습니다.
 
 원격 Actions 사용이 막힌 경우, PC에서 GitHub 소스를 받아 직접 빌드할 수 있습니다. 공개 릴리스 승인은 필요하지 않습니다.
 

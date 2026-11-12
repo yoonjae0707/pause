@@ -17,8 +17,8 @@ textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px sol
 @media(max-width:480px){:host([data-fullscreen]) .panel{left:12px;right:12px;width:auto}}
 @media(prefers-reduced-motion:reduce){button{transition:none}}
 :host .presence-reflection>.notes-reveal-clip>.backdrop{background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
-.panel.notes-card{--card-bg:#f5f5f7;--card-fill:#fff;--card-chip:#7676801f;--card-fg:#1d1d1f;--card-muted:#6e6e73;--card-cta:#1d1d1f;--card-on-cta:#fff;--card-focus:#1d1d1f66;--card-error:#d70015;background:var(--card-bg);color:var(--card-fg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI","Apple SD Gothic Neo","Malgun Gothic",Roboto,sans-serif;border:0;border-radius:22px;box-shadow:0 12px 40px #0000002e;-webkit-font-smoothing:antialiased}
-:host([data-dark]) .panel.notes-card{--card-bg:#1c1c1e;--card-fill:#2c2c2e;--card-chip:#7676803d;--card-fg:#f5f5f7;--card-muted:#98989d;--card-cta:#f5f5f7;--card-on-cta:#1d1d1f;--card-focus:#f5f5f766;--card-error:#ff6961;box-shadow:0 12px 40px #00000080}
+.panel.notes-card,.dialog.notes-card{--card-bg:#f5f5f7;--card-fill:#fff;--card-chip:#7676801f;--card-fg:#1d1d1f;--card-muted:#6e6e73;--card-cta:#1d1d1f;--card-on-cta:#fff;--card-focus:#1d1d1f66;--card-error:#d70015;background:var(--card-bg);color:var(--card-fg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI","Apple SD Gothic Neo","Malgun Gothic",Roboto,sans-serif;border:0;border-radius:22px;box-shadow:0 12px 40px #0000002e;-webkit-font-smoothing:antialiased}
+:host([data-dark]) .panel.notes-card,:host([data-dark]) .dialog.notes-card{--card-bg:#1c1c1e;--card-fill:#2c2c2e;--card-chip:#7676803d;--card-fg:#f5f5f7;--card-muted:#98989d;--card-cta:#f5f5f7;--card-on-cta:#1d1d1f;--card-focus:#f5f5f766;--card-error:#ff6961;box-shadow:0 12px 40px #00000080}
 :host([data-pause-sidebar]) .panel.notes-card{box-shadow:none}
 .notes-card .notes-header{display:flex;flex-direction:column;justify-content:flex-end;aspect-ratio:16/9;min-height:0;border-radius:22px 22px 0 0;background:var(--card-chip)}
 .notes-card .notes-header:not(:has(img)){aspect-ratio:auto;padding-top:60px;background:none}
@@ -42,6 +42,13 @@ textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px sol
 .notes-time{flex:none;min-height:24px;padding:3px 9px;border:0;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--card-chip);color:var(--card-fg)}
 .notes-time:hover:not(:disabled){filter:none;opacity:.75}
 .notes-card .note p{margin:1px 0 0;font-size:14px;line-height:1.5;letter-spacing:-.15px;white-space:pre-wrap;overflow-wrap:anywhere}
+.notes-footnote{margin:18px 0 0;font-size:11.5px;line-height:1.45;color:var(--card-muted);text-align:center}
+.dialog.notes-card{width:440px;padding:0}
+.notes-card .reflection-body{padding:18px 24px 22px}.dialog.notes-card .notes-header h2,.dialog.notes-card .notes-eyebrow{margin-inline:24px}
+.notes-card .reflection-body>h2{margin:0 0 4px;font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1.25;color:var(--card-fg)}
+.reflection-lede{margin:0 0 16px;font-size:14px;line-height:1.45;color:var(--card-muted)}
+.notes-card .reflection-actions{display:flex;gap:10px;margin-top:14px}.notes-card .reflection-actions button{flex:1;min-height:40px;font-size:15px}
+.notes-card .reflection-actions button:not(.primary){border:0;background:var(--card-chip);color:var(--card-fg);font-weight:600;transition:opacity .15s}.notes-card .reflection-actions button:not(.primary):hover:not(:disabled){filter:none;opacity:.8}.notes-card .reflection-actions button:not(.primary):disabled{opacity:.45}
 .notes-card [role=alert]{margin:12px 0 0;font-size:13px;line-height:1.5;color:var(--card-error)}
 @media(max-width:480px){.notes-card .notes-body{padding:14px 16px 16px}.notes-card .notes-header h2,.notes-eyebrow{margin-inline:16px}}
 @media(forced-colors:active){.notes-card textarea,.notes-time,.notes-card .primary{border:1px solid CanvasText}.notes-card .notes-close{background:ButtonFace;color:ButtonText;backdrop-filter:none}.notes-card .notes-header h2,.notes-eyebrow{color:CanvasText}}
