@@ -19,14 +19,13 @@ textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px sol
 .panel.notes-card{--card-tonal:#f1f3f4;--card-accent-tonal:#d3e3fd;--card-on-accent-tonal:#041e49;--card-error:#b3261e;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI Variable Text","Segoe UI",Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;border-radius:20px;box-shadow:0 1px 2px #0000000f,0 10px 32px #00000024;-webkit-font-smoothing:antialiased}
 :host([data-dark]) .panel.notes-card{--card-tonal:#303134;--card-accent-tonal:#0842a0;--card-on-accent-tonal:#d3e3fd;--card-error:#f2b8b5;box-shadow:0 10px 32px #0008}
 :host([data-pause-sidebar]) .panel.notes-card{border:1px solid var(--pause-line);box-shadow:0 1px 2px #0000000d}
-.notes-card .notes-header{min-height:128px;border-radius:19px 19px 0 0}
-.notes-card .notes-thumbnail-fade{background:linear-gradient(to bottom,transparent 0%,color-mix(in srgb,var(--pause-bg) 35%,transparent) 45%,var(--pause-bg) 94%)}
-.notes-card .notes-header h2{padding:88px 20px 0;font-size:20px;font-weight:700;letter-spacing:-.4px;line-height:1.3}
+.notes-card .notes-header{display:flex;flex-direction:column;justify-content:flex-end;aspect-ratio:16/9;min-height:0;border-radius:19px 19px 0 0;background:linear-gradient(135deg,#3c4043,#202124)}
+.notes-card .notes-thumbnail-fade{background:linear-gradient(to bottom,#0000 38%,#00000066 64%,#000000c2 100%)}
+.notes-eyebrow{position:relative;margin:0 20px 4px;font-size:11px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;line-height:1.2;color:#ffffffd9}
+.notes-card .notes-header h2{position:relative;margin:0 20px 16px;padding:0;font-size:17px;font-weight:650;letter-spacing:-.3px;line-height:1.35;color:#fff;text-shadow:0 1px 3px #0006;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
 .notes-card .notes-close{top:10px;right:10px;width:32px;height:32px;min-height:32px;background:#0000004d;color:#fff;box-shadow:none;-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}
 .notes-card .notes-close:hover:not(:disabled){background:#00000070;filter:none}.notes-card .notes-close svg{width:18px;height:18px}
-.notes-card .notes-header:not(:has(img)) .notes-close{background:var(--card-tonal);color:var(--pause-fg)}
-.notes-card .notes-body{padding:0 20px 20px}
-.notes-tagline{margin:2px 0 14px;font-size:13px;line-height:1.4;color:var(--pause-muted)}
+.notes-card .notes-body{padding:16px 20px 20px}
 .notes-card textarea{display:block;width:100%;margin:0;min-height:112px;padding:12px 14px;border:0;border-radius:14px;background:var(--card-tonal);font-size:14px;line-height:1.55;resize:vertical}
 .notes-card textarea::placeholder{color:var(--pause-muted);opacity:.85}.notes-card textarea:focus-visible{outline:2px solid var(--pause-accent);outline-offset:0}
 .notes-actions{display:flex;align-items:center;gap:12px;margin-top:10px}
@@ -38,8 +37,8 @@ textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px sol
 .notes-time{flex:none;min-height:26px;padding:3px 10px;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--card-accent-tonal);color:var(--card-on-accent-tonal)}
 .notes-card .note p{margin:2px 0 0;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .notes-card [role=alert]{margin:12px 0 0;font-size:13px;line-height:1.5;color:var(--card-error)}
-@media(max-width:480px){.notes-card .notes-body{padding:0 16px 16px}.notes-card .notes-header h2{padding-inline:16px}}
-@media(forced-colors:active){.notes-card textarea,.notes-time{border:1px solid CanvasText}.notes-card .notes-close{background:ButtonFace;color:ButtonText;backdrop-filter:none}}
+@media(max-width:480px){.notes-card .notes-body{padding:14px 16px 16px}.notes-card .notes-header h2{margin-inline:16px}.notes-eyebrow{margin-inline:16px}}
+@media(forced-colors:active){.notes-card textarea,.notes-time{border:1px solid CanvasText}.notes-card .notes-close{background:ButtonFace;color:ButtonText;backdrop-filter:none}.notes-card .notes-header h2,.notes-eyebrow{color:CanvasText;text-shadow:none}}
 @media(forced-colors:active){button,textarea,select,.panel,.dialog{border:1px solid CanvasText}button:focus-visible,textarea:focus-visible,select:focus-visible{outline-color:Highlight}}
 `;
 export const materialActionCSS=`
