@@ -27,8 +27,8 @@ export function NotesReveal({open,children,mode='sidebar',onExited}:{open:boolea
    // While closing, the card keeps painting over the list (overflow visible, inert) as it fades out.
    node.style.height=open?'auto':'0px';node.style.overflow=open?'':'visible';
    animation=node.animate([{opacity},{opacity:open?1:0}],{duration,easing:open?'cubic-bezier(.2,0,0,1)':'cubic-bezier(.3,0,.8,.15)',fill:'both'});animation.finished.then(finish,()=>{});
-   // Both directions start from the lowest visible card (opening: each card moves away from the one above it).
-   const wave=playCascade(first,'bottom-first');stopCascade.current=wave.stop;
+   // Opening waves top-down (each card slides under the next one, which paints above it); closing rises bottom-first.
+   const wave=playCascade(first,open?'top-first':'bottom-first');stopCascade.current=wave.stop;
    diagnostic('list-cascade',{reason:`${open?'open':'close'} targets=${targets.length} moved=${wave.moved}`});
   }else if(duration&&typeof node.animate==='function'){
    if(mode==='sidebar')diagnostic('list-cascade',{reason:`${open?'open':'close'} fallback=${reduced?'reduced-motion':'height'}`});

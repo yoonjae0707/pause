@@ -50,10 +50,10 @@ it('finds outermost recommendation entries after the docked host and nothing wit
  page.remove();buildPage(false);const other=document.createElement('div');(page.firstElementChild!.shadowRoot!).append(other);expect(cascadeTargets(other)).toEqual([]);
 });
 
-it('opens bottom-first with real coordinate deltas, a small bounce and no inline styles on YouTube cards',async()=>{
+it('opens top-first with real coordinate deltas, a small bounce and no inline styles on YouTube cards',async()=>{
  buildPage();await render(false);await render(true);
  const moves=itemCalls();expect(moves).toHaveLength(items.length);
- expect(moves.map(c=>c.el)).toEqual([...items].reverse());
+ expect(moves.map(c=>c.el)).toEqual(items);
  expect(moves.map(c=>c.options.delay)).toEqual(items.map((_,i)=>i*CASCADE.stagger));
  for(const c of moves){expect(c.options.duration).toBe(450);expect(c.options.fill).toBe('backwards');expect(translate(c.frames[0])).toBe(-NOTES);expect(translate(c.frames[1])).toBe(4);expect(c.frames.at(-1)!.transform).toBe('translateY(0px)');}
  const fade=calls.find(c=>c.el===reveal())!;expect(fade.frames.every(f=>!('height' in f))).toBe(true);expect(fade.frames.at(-1)!.opacity).toBe(1);expect(reveal().style.height).toBe('auto');
