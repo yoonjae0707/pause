@@ -16,6 +16,30 @@ textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px sol
 :host([data-fullscreen]) .panel{right:24px;bottom:80px;width:360px;max-height:calc(100dvh - 112px)}.notes-fab-icon{display:none}:host([data-fullscreen]) .notes-button{top:20px;right:20px;bottom:auto;width:44px;height:44px;padding:0;display:grid;place-items:center;background:#202124cc;color:#fff;box-shadow:none}:host([data-fullscreen]) .notes-button[hidden]{display:none}:host([data-fullscreen]) .notes-fab-label{display:none}:host([data-fullscreen]) .notes-fab-icon{display:block}:host([data-fullscreen]) .backdrop{background:transparent}
 @media(max-width:480px){:host([data-fullscreen]) .panel{left:12px;right:12px;width:auto}}
 @media(prefers-reduced-motion:reduce){button{transition:none}}
+.panel.notes-card{--card-tonal:#f1f3f4;--card-accent-tonal:#d3e3fd;--card-on-accent-tonal:#041e49;--card-error:#b3261e;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI Variable Text","Segoe UI",Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;border-radius:20px;box-shadow:0 1px 2px #0000000f,0 10px 32px #00000024;-webkit-font-smoothing:antialiased}
+:host([data-dark]) .panel.notes-card{--card-tonal:#303134;--card-accent-tonal:#0842a0;--card-on-accent-tonal:#d3e3fd;--card-error:#f2b8b5;box-shadow:0 10px 32px #0008}
+:host([data-pause-sidebar]) .panel.notes-card{border:1px solid var(--pause-line);box-shadow:0 1px 2px #0000000d}
+.notes-card .notes-header{min-height:128px;border-radius:19px 19px 0 0}
+.notes-card .notes-thumbnail-fade{background:linear-gradient(to bottom,transparent 0%,color-mix(in srgb,var(--pause-bg) 35%,transparent) 45%,var(--pause-bg) 94%)}
+.notes-card .notes-header h2{padding:88px 20px 0;font-size:20px;font-weight:700;letter-spacing:-.4px;line-height:1.3}
+.notes-card .notes-close{top:10px;right:10px;width:32px;height:32px;min-height:32px;background:#0000004d;color:#fff;box-shadow:none;-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}
+.notes-card .notes-close:hover:not(:disabled){background:#00000070;filter:none}.notes-card .notes-close svg{width:18px;height:18px}
+.notes-card .notes-header:not(:has(img)) .notes-close{background:var(--card-tonal);color:var(--pause-fg)}
+.notes-card .notes-body{padding:0 20px 20px}
+.notes-tagline{margin:2px 0 14px;font-size:13px;line-height:1.4;color:var(--pause-muted)}
+.notes-card textarea{display:block;width:100%;margin:0;min-height:112px;padding:12px 14px;border:0;border-radius:14px;background:var(--card-tonal);font-size:14px;line-height:1.55;resize:vertical}
+.notes-card textarea::placeholder{color:var(--pause-muted);opacity:.85}.notes-card textarea:focus-visible{outline:2px solid var(--pause-accent);outline-offset:0}
+.notes-actions{display:flex;align-items:center;gap:12px;margin-top:10px}
+.notes-hint{flex:1;margin:0;font-size:12px;line-height:1.45;color:var(--pause-muted)}.notes-hint.is-live{color:var(--pause-accent);font-weight:500}
+.notes-card .primary{flex:none;min-height:36px;padding:8px 20px;font-weight:600;letter-spacing:.1px}
+.notes-list{margin-top:18px;padding-top:14px;border-top:1px solid var(--pause-line)}
+.notes-list-title{display:flex;align-items:center;gap:6px;margin:0 0 4px;font-size:13px;font-weight:600;color:var(--pause-muted)}.notes-list-title span{min-width:20px;padding:0 6px;border-radius:999px;background:var(--card-tonal);font-size:12px;text-align:center}
+.notes-card .note{display:flex;gap:12px;align-items:flex-start;margin:0;padding:10px 0;white-space:normal}.notes-card .note+.note{border-top:1px solid var(--pause-line)}
+.notes-time{flex:none;min-height:26px;padding:3px 10px;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--card-accent-tonal);color:var(--card-on-accent-tonal)}
+.notes-card .note p{margin:2px 0 0;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.notes-card [role=alert]{margin:12px 0 0;font-size:13px;line-height:1.5;color:var(--card-error)}
+@media(max-width:480px){.notes-card .notes-body{padding:0 16px 16px}.notes-card .notes-header h2{padding-inline:16px}}
+@media(forced-colors:active){.notes-card textarea,.notes-time{border:1px solid CanvasText}.notes-card .notes-close{background:ButtonFace;color:ButtonText;backdrop-filter:none}}
 @media(forced-colors:active){button,textarea,select,.panel,.dialog{border:1px solid CanvasText}button:focus-visible,textarea:focus-visible,select:focus-visible{outline-color:Highlight}}
 `;
 export const materialActionCSS=`
