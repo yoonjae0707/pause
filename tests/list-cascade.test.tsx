@@ -13,6 +13,7 @@ const notesHeight=()=>{const h=reveal()?.style.height;return h==='auto'?NOTES:pa
 
 function buildPage(withItems=true){
  page=document.createElement('div');page.id='secondary-inner';document.body.append(page);
+ document.head.querySelector('#cascade-css')?.remove();const css=document.createElement('style');css.id='cascade-css';css.textContent='ytd-compact-video-renderer,yt-lockup-view-model,yt-related-chip-cloud-renderer,ytd-watch-next-secondary-results-renderer,ytd-item-section-renderer{display:block}';document.head.append(css);
  const host=document.createElement('div');page.append(host);const shadow=host.attachShadow({mode:'open'});const mount=document.createElement('div');shadow.append(mount);
  const results=document.createElement('ytd-watch-next-secondary-results-renderer');page.append(results);
  items=[];
@@ -49,10 +50,10 @@ it('finds outermost recommendation entries after the docked host and nothing wit
  page.remove();buildPage(false);const other=document.createElement('div');(page.firstElementChild!.shadowRoot!).append(other);expect(cascadeTargets(other)).toEqual([]);
 });
 
-it('opens top-first with real coordinate deltas, a small bounce and no inline styles on YouTube cards',async()=>{
+it('opens bottom-first with real coordinate deltas, a small bounce and no inline styles on YouTube cards',async()=>{
  buildPage();await render(false);await render(true);
  const moves=itemCalls();expect(moves).toHaveLength(items.length);
- expect(moves.map(c=>c.el)).toEqual(items);
+ expect(moves.map(c=>c.el)).toEqual([...items].reverse());
  expect(moves.map(c=>c.options.delay)).toEqual(items.map((_,i)=>i*CASCADE.stagger));
  for(const c of moves){expect(c.options.duration).toBe(450);expect(c.options.fill).toBe('backwards');expect(translate(c.frames[0])).toBe(-NOTES);expect(translate(c.frames[1])).toBe(4);expect(c.frames.at(-1)!.transform).toBe('translateY(0px)');}
  const fade=calls.find(c=>c.el===reveal())!;expect(fade.frames.every(f=>!('height' in f))).toBe(true);expect(fade.frames.at(-1)!.opacity).toBe(1);expect(reveal().style.height).toBe('auto');
@@ -69,6 +70,13 @@ it('closes bottom-first, keeps the fading card painted while the list rises and 
  await act(async()=>{vi.advanceTimersByTime(420);});
  expect(exited).toHaveBeenCalledTimes(1);expect(reveal().querySelector('textarea')).toBeNull();expect(reveal().style.overflow).toBe('');
  for(const el of items)expect(el.getAttribute('style')).toBeNull();
+});
+
+it('moves the block children of inline custom elements, where transform would have no effect',()=>{
+ buildPage();vi.useRealTimers();const section=page.querySelector('ytd-item-section-renderer')!;
+ const inline=document.createElement('yt-lockup-view-model');inline.style.display='inline';const inner=document.createElement('div');inner.className='yt-lockup-view-model';inline.append(inner);section.append(inline);
+ const node=document.createElement('div');page.querySelector('div')!.shadowRoot!.append(node);
+ const targets=cascadeTargets(node);expect(targets).toContain(inner);expect(targets).not.toContain(inline);
 });
 
 it('rapid reopen cancels the running wave and restarts from the current positions',async()=>{

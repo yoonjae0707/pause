@@ -1,5 +1,6 @@
 import React,{useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {cascadeTargets,playCascade,snapshot,type CascadeSnapshot} from './list-cascade';
+import {diagnostic} from './diagnostics';
 
 /** One presence lifecycle for sidebar, floating/fullscreen Notes and reflection. */
 export function NotesReveal({open,children,mode='sidebar',onExited}:{open:boolean;children:React.ReactNode;mode?:'sidebar'|'floating'|'reflection';onExited?:()=>void}){
@@ -13,7 +14,8 @@ export function NotesReveal({open,children,mode='sidebar',onExited}:{open:boolea
   const reduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   const duration=reduced?120:mode==='sidebar'?(open?500:380):(open?300:220);
   // Recommendation cascade: measure the visual "first" positions before the previous cascade is cancelled.
-  const first:CascadeSnapshot|null=mode==='sidebar'&&!reduced&&typeof node.animate==='function'?(t=>t.length?snapshot(t):null)(cascadeTargets(node)):null;
+  const targets=mode==='sidebar'&&!reduced&&typeof node.animate==='function'?cascadeTargets(node):[];
+  const first:CascadeSnapshot|null=targets.length?snapshot(targets):null;
   stopCascade.current();stopCascade.current=()=>{};
   const opacity=Number(getComputedStyle(node).opacity)||0;
   const startHeight=node.getBoundingClientRect().height;
@@ -25,8 +27,11 @@ export function NotesReveal({open,children,mode='sidebar',onExited}:{open:boolea
    // While closing, the card keeps painting over the list (overflow visible, inert) as it fades out.
    node.style.height=open?'auto':'0px';node.style.overflow=open?'':'visible';
    animation=node.animate([{opacity},{opacity:open?1:0}],{duration,easing:open?'cubic-bezier(.2,0,0,1)':'cubic-bezier(.3,0,.8,.15)',fill:'both'});animation.finished.then(finish,()=>{});
-   stopCascade.current=playCascade(first,open?'top-first':'bottom-first');
+   // Both directions start from the lowest visible card (opening: each card moves away from the one above it).
+   const wave=playCascade(first,'bottom-first');stopCascade.current=wave.stop;
+   diagnostic('list-cascade',{reason:`${open?'open':'close'} targets=${targets.length} moved=${wave.moved}`});
   }else if(duration&&typeof node.animate==='function'){
+   if(mode==='sidebar')diagnostic('list-cascade',{reason:`${open?'open':'close'} fallback=${reduced?'reduced-motion':'height'}`});
    if(mode==='sidebar'&&reduced&&open)node.style.height='auto';
    const overshoot=Math.min(10,endHeight*.025);
    const frames=mode==='sidebar'&&!reduced?(open?[
